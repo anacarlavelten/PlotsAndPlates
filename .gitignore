@@ -1,12 +1,9 @@
-# --- Pastas geradas pelo Build (Não envie isso!) ---
 bin/
 obj/
 
-# --- Configurações do Editor (VS Code / Visual Studio) ---
 .vs/
 .vscode/
 
-# --- ARQUIVOS DE SEGURANÇA (O mais importante) ---
 appsettings.Development.json
 
 .gitignore
