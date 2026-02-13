@@ -23,6 +23,16 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()  // Aceita qualquer site (em produção e restringido
+               .AllowAnyMethod()  // Aceita GET, POST, PUT, DELETE
+               .AllowAnyHeader(); // Aceita qualquer cabeçalho
+    });
+});
+
     // Construção do App
     Console.WriteLine("--> 4. Construindo o App (Build)...");
     var app = builder.Build();
@@ -34,7 +44,7 @@ try
         app.UseSwagger();
         app.UseSwaggerUI();
     }
-
+app.UseCors("AllowAll");
     app.MapControllers();
 
     Console.WriteLine("--> 6. TUDO PRONTO! Iniciando o servidor agora...");
