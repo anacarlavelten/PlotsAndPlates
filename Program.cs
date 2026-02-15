@@ -1,43 +1,64 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using PlotsAndPlates.Backend.Data;
-using PlotsAndPlates.Backend.Controllers; // Garante que acha os controllers
-
+using PlotsAndPlates.Backend.Controllers;
 try 
 {
     Console.WriteLine("--> 1. Iniciando o Builder...");
     var builder = WebApplication.CreateBuilder(args);
 
-    // Configuração do Banco
     Console.WriteLine("--> 2. Configurando Banco de Dados...");
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     
-    // Imprime a string de conexão (SÓ PARA TESTE - apague depois se for colocar em produção)
     Console.WriteLine($"--> String usada: {connectionString}");
 
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(connectionString));
 
-    // Configuração dos Controllers e Swagger
     Console.WriteLine("--> 3. Adicionando Services e Swagger...");
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Description = "Cabeçalho de autorização padrão usando o esquema Bearer (\"bearer {token}\")",
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    options.OperationFilter<SecurityRequirementsOperationFilter>();
+});
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value!)),
+            ValidateIssuer = false, // Em produção, mude para true
+            ValidateAudience = false // Em produção, mude para true
+        };
+    });
 
     builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
     {
-        builder.AllowAnyOrigin()  // Aceita qualquer site (em produção e restringido
-               .AllowAnyMethod()  // Aceita GET, POST, PUT, DELETE
-               .AllowAnyHeader(); // Aceita qualquer cabeçalho
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
     });
 });
-
-    // Construção do App
     Console.WriteLine("--> 4. Construindo o App (Build)...");
     var app = builder.Build();
 
-    // Pipeline
     if (app.Environment.IsDevelopment())
     {
         Console.WriteLine("--> 5. Ativando Swagger UI...");
@@ -52,9 +73,15 @@ app.UseCors("AllowAll");
 }
 catch (Exception ex)
 {
-    // AQUI VAI APARECER O ERRO REAL
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine("\nCRASH TOTAL! Ocorreu um erro fatal:");
     Console.WriteLine(ex.ToString());
     Console.ResetColor();
 }
+app.UseCors("AllowAll");
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+app.Run();
