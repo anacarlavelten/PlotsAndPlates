@@ -17,15 +17,21 @@ namespace PlotsAndPlates.Backend.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // ID será gerado automaticamente
+            base.OnModelCreating(modelBuilder);
+
+            // Adicione isso:
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.Tipo)
+                .HasConversion<string>();
+
             modelBuilder.Entity<Prato>()
                 .Property(p => p.Id)
                 .UseIdentityColumn();
-
 
             modelBuilder.Entity<Avaliacao>()
                 .Property(a => a.Id)
                 .UseIdentityColumn();
         }
     }
+
 }

@@ -19,8 +19,8 @@ namespace PlotsAndPlates.Backend.Models
         [Column("senha_hash")]
         public string SenhaHash { get; set; } = string.Empty;
 
-        [Column("tipo")] // adm ou user
-        public string Tipo { get; set; } = string.Empty;
+        [Column("tipo")]
+        public TipoUsuario Tipo { get; set; } = TipoUsuario.visitante;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

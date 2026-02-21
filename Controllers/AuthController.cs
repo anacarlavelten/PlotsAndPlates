@@ -38,7 +38,7 @@ namespace PlotsAndPlates.Backend.Controllers
                 Nome = request.Nome,
                 Email = request.Email,
                 SenhaHash = passwordHash,
-                Tipo = "comum",
+                Tipo = TipoUsuario.visitante,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -72,7 +72,7 @@ namespace PlotsAndPlates.Backend.Controllers
                 new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
                 new Claim(ClaimTypes.Name, usuario.Nome),
                 new Claim(ClaimTypes.Email, usuario.Email),
-                new Claim(ClaimTypes.Role, usuario.Tipo)
+                new Claim(ClaimTypes.Role, usuario.Tipo.ToString())
             };
 
             var token = new JwtSecurityToken(
